@@ -207,15 +207,25 @@ describe("App", () => {
     });
   });
 
-  it("clamps value to 100 when > 100 in % unit", async () => {
+  it("reverts to previous valid value when > 100 in % unit", async () => {
     render(<App />);
     const input = screen.getByRole("textbox");
     
-    fireEvent.change(input, { target: { value: "150" } });
+    // Set initial value to 50
+    fireEvent.change(input, { target: { value: "50" } });
     fireEvent.blur(input);
     
     await waitFor(() => {
-      expect(input).toHaveValue("100");
+      expect(input).toHaveValue("50");
+    });
+    
+    // Enter value > 100
+    fireEvent.change(input, { target: { value: "150" } });
+    fireEvent.blur(input);
+    
+    // Should revert to previous valid value (50)
+    await waitFor(() => {
+      expect(input).toHaveValue("50");
     });
   });
 

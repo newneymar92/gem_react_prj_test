@@ -72,26 +72,30 @@ const App = () => {
 
     const numValue = extractValidNumber(e.target.value);
 
-    const valueToValidate =
-      numValue !== null ? numValue : previousValidValueRef.current;
-    const currentValueForValidation =
-      numValue !== null ? value : previousValidValueRef.current;
-
-    if (numValue !== null) {
-      const roundedValue = roundNumber(numValue);
-      if (roundedValue >= 0 && (selectedUnit === "px" || roundedValue <= 100)) {
-        previousValidValueRef.current = roundedValue;
-      }
+    // If input is invalid, revert to previous valid value
+    if (numValue === null) {
+      const formattedValue = formatNumber(previousValidValueRef.current);
+      setInputValue(formattedValue);
+      setValue(previousValidValueRef.current);
+      return;
     }
 
-    const validatedValue = validateAndFormatValue(
-      valueToValidate,
-      currentValueForValidation,
-      {
-        min: 0,
-        max: selectedUnit === "%" ? 100 : undefined,
-      }
-    );
+    const roundedValue = roundNumber(numValue);
+
+    if (selectedUnit === "%" && roundedValue > 100) {
+      const formattedValue = formatNumber(previousValidValueRef.current);
+      setInputValue(formattedValue);
+      setValue(previousValidValueRef.current);
+      return;
+    }
+
+    if (roundedValue >= 0 && (selectedUnit === "px" || roundedValue <= 100)) {
+      previousValidValueRef.current = roundedValue;
+    }
+
+    const validatedValue = validateAndFormatValue(roundedValue, roundedValue, {
+      min: 0,
+    });
 
     const formattedValue = formatNumber(validatedValue);
     setInputValue(formattedValue);
