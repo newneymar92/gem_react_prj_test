@@ -17,16 +17,16 @@ describe("validationUtils", () => {
       expect(validateAndFormatValue(50, 10, { max: 100 })).toBe(50);
     });
 
-    it("uses previousValidValue when value exceeds max", () => {
+    it("clamps to max when value exceeds max", () => {
       expect(
         validateAndFormatValue(150, 10, {
           max: 100,
           previousValidValue: 80,
         })
-      ).toBe(80);
+      ).toBe(100);
     });
 
-    it("falls back to max when previousValidValue is not provided", () => {
+    it("clamps to max when value exceeds max without previousValidValue", () => {
       expect(validateAndFormatValue(150, 10, { max: 100 })).toBe(100);
     });
 

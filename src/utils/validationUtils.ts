@@ -12,7 +12,7 @@ export const validateAndFormatValue = (
   currentValue: number,
   options: ValidateValueOptions = {}
 ): number => {
-  const { min = 0, max, previousValidValue } = options;
+  const { min = 0, max } = options;
 
   if (numValue === null) {
     return currentValue;
@@ -25,7 +25,8 @@ export const validateAndFormatValue = (
   }
 
   if (max !== undefined && validatedValue > max) {
-    return previousValidValue !== undefined ? previousValidValue : max;
+    // Clamp to max when value exceeds max (user entered a valid but out-of-range value)
+    return max;
   }
 
   return validatedValue;

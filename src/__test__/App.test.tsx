@@ -15,30 +15,39 @@ describe("App", () => {
     expect(screen.getByText("px")).toBeInTheDocument();
   });
 
-  it("switches unit from % to px", () => {
+  it("switches unit from % to px", async () => {
     render(<App />);
-    const pxButton = screen.getByText("px").closest("button");
+    const pxSpan = screen.getByText("px");
+    const pxButton = pxSpan.closest("button");
     
     fireEvent.click(pxButton!);
     
     // Check if px button is now active (has active class)
-    const pxSpan = screen.getByText("px");
-    expect(pxSpan).toHaveClass("text-[#F9F9F9]");
+    await waitFor(() => {
+      expect(pxSpan).toHaveClass("text-[#F9F9F9]");
+    });
   });
 
-  it("switches unit from px to %", () => {
+  it("switches unit from px to %", async () => {
     render(<App />);
-    const pxButton = screen.getByText("px").closest("button");
-    const percentButton = screen.getByText("%").closest("button");
+    const pxSpan = screen.getByText("px");
+    const percentSpan = screen.getByText("%");
+    const pxButton = pxSpan.closest("button");
+    const percentButton = percentSpan.closest("button");
     
     // Switch to px first
     fireEvent.click(pxButton!);
     
+    await waitFor(() => {
+      expect(pxSpan).toHaveClass("text-[#F9F9F9]");
+    });
+    
     // Then switch back to %
     fireEvent.click(percentButton!);
     
-    const percentSpan = screen.getByText("%");
-    expect(percentSpan).toHaveClass("text-[#F9F9F9]");
+    await waitFor(() => {
+      expect(percentSpan).toHaveClass("text-[#F9F9F9]");
+    });
   });
 
   it("clamps value to 100 when switching to % unit with value > 100", async () => {
@@ -46,15 +55,25 @@ describe("App", () => {
     const input = screen.getByRole("textbox");
     
     // Switch to px (to allow > 100)
-    const pxButton = screen.getByText("px").closest("button");
+    const pxSpan = screen.getByText("px");
+    const pxButton = pxSpan.closest("button");
     fireEvent.click(pxButton!);
+    
+    await waitFor(() => {
+      expect(pxSpan).toHaveClass("text-[#F9F9F9]");
+    });
     
     // Set value to 150 in px
     fireEvent.change(input, { target: { value: "150" } });
     fireEvent.blur(input);
     
+    await waitFor(() => {
+      expect(input).toHaveValue("150");
+    });
+    
     // Switch back to %
-    const percentButton = screen.getByText("%").closest("button");
+    const percentSpan = screen.getByText("%");
+    const percentButton = percentSpan.closest("button");
     fireEvent.click(percentButton!);
     
     await waitFor(() => {
@@ -64,8 +83,8 @@ describe("App", () => {
 
   it("increases value when plus button is clicked", async () => {
     render(<App />);
-    const input = screen.getByRole("textbox");
-    const initialValue = parseFloat((input as HTMLInputElement).value || "1");
+    const input = screen.getByRole("textbox") as HTMLInputElement;
+    const initialValue = parseFloat(input.value || "1");
     
     // Find plus button by finding the button containing PlusIcon
     const buttons = screen.getAllByRole("button");
@@ -74,11 +93,12 @@ describe("App", () => {
       btn.className.includes("rounded-r-lg")
     );
     
+    expect(plusButton).toBeDefined();
     if (plusButton) {
       fireEvent.click(plusButton);
       
       await waitFor(() => {
-        const newValue = parseFloat((input as HTMLInputElement).value || "0");
+        const newValue = parseFloat(input.value || "0");
         expect(newValue).toBeGreaterThan(initialValue);
       });
     }
@@ -92,6 +112,10 @@ describe("App", () => {
     fireEvent.change(input, { target: { value: "2" } });
     fireEvent.blur(input);
     
+    await waitFor(() => {
+      expect(input).toHaveValue("2");
+    });
+    
     // Find minus button
     const buttons = screen.getAllByRole("button");
     const minusButton = buttons.find((btn) => 
@@ -99,6 +123,7 @@ describe("App", () => {
       btn.className.includes("rounded-l-lg")
     );
     
+    expect(minusButton).toBeDefined();
     if (minusButton) {
       fireEvent.click(minusButton);
       
@@ -109,7 +134,7 @@ describe("App", () => {
     }
   });
 
-  it("disables minus button when value is 0", () => {
+  it("disables minus button when value is 0", async () => {
     render(<App />);
     const input = screen.getByRole("textbox");
     
@@ -117,14 +142,16 @@ describe("App", () => {
     fireEvent.change(input, { target: { value: "0" } });
     fireEvent.blur(input);
     
-    const buttons = screen.getAllByRole("button");
-    const minusButton = buttons.find((btn) => 
-      btn.className.includes("rounded-l-lg")
-    );
-    expect(minusButton).toBeDisabled();
+    await waitFor(() => {
+      const buttons = screen.getAllByRole("button");
+      const minusButton = buttons.find((btn) => 
+        btn.className.includes("rounded-l-lg")
+      );
+      expect(minusButton).toBeDisabled();
+    });
   });
 
-  it("disables plus button when value is 100 in % unit", () => {
+  it("disables plus button when value is 100 in % unit", async () => {
     render(<App />);
     const input = screen.getByRole("textbox");
     
@@ -132,11 +159,13 @@ describe("App", () => {
     fireEvent.change(input, { target: { value: "100" } });
     fireEvent.blur(input);
     
-    const buttons = screen.getAllByRole("button");
-    const plusButton = buttons.find((btn) => 
-      btn.className.includes("rounded-r-lg")
-    );
-    expect(plusButton).toBeDisabled();
+    await waitFor(() => {
+      const buttons = screen.getAllByRole("button");
+      const plusButton = buttons.find((btn) => 
+        btn.className.includes("rounded-r-lg")
+      );
+      expect(plusButton).toBeDisabled();
+    });
   });
 
   it("validates and formats input on blur", async () => {
@@ -155,14 +184,14 @@ describe("App", () => {
 
   it("handles input with comma and converts to dot", async () => {
     render(<App />);
-    const input = screen.getByRole("textbox");
+    const input = screen.getByRole("textbox") as HTMLInputElement;
     
     fireEvent.change(input, { target: { value: "12,5" } });
     fireEvent.blur(input);
     
     // Should convert comma to dot and format
     await waitFor(() => {
-      expect(input).toHaveValue("12.5");
+      expect(input.value).toBe("12.5");
     });
   });
 
@@ -192,8 +221,13 @@ describe("App", () => {
 
   it("allows value > 100 in px unit", async () => {
     render(<App />);
-    const pxButton = screen.getByText("px").closest("button");
+    const pxSpan = screen.getByText("px");
+    const pxButton = pxSpan.closest("button");
     fireEvent.click(pxButton!);
+    
+    await waitFor(() => {
+      expect(pxSpan).toHaveClass("text-[#F9F9F9]");
+    });
     
     const input = screen.getByRole("textbox");
     fireEvent.change(input, { target: { value: "150" } });
@@ -204,13 +238,17 @@ describe("App", () => {
     });
   });
 
-  it("shows tooltip when minus button is hovered and value is 0", () => {
+  it("shows tooltip when minus button is hovered and value is 0", async () => {
     render(<App />);
     const input = screen.getByRole("textbox");
     
     // Set value to 0
     fireEvent.change(input, { target: { value: "0" } });
     fireEvent.blur(input);
+    
+    await waitFor(() => {
+      expect(input).toHaveValue("0");
+    });
     
     const buttons = screen.getAllByRole("button");
     const minusButtonContainer = buttons
@@ -219,17 +257,23 @@ describe("App", () => {
     
     if (minusButtonContainer) {
       fireEvent.mouseEnter(minusButtonContainer);
-      expect(screen.getByText("Value must greater than 0")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText("Value must greater than 0")).toBeInTheDocument();
+      });
     }
   });
 
-  it("shows tooltip when plus button is hovered and value is 100 in % unit", () => {
+  it("shows tooltip when plus button is hovered and value is 100 in % unit", async () => {
     render(<App />);
     const input = screen.getByRole("textbox");
     
     // Set value to 100
     fireEvent.change(input, { target: { value: "100" } });
     fireEvent.blur(input);
+    
+    await waitFor(() => {
+      expect(input).toHaveValue("100");
+    });
     
     const buttons = screen.getAllByRole("button");
     const plusButtonContainer = buttons
@@ -238,7 +282,9 @@ describe("App", () => {
     
     if (plusButtonContainer) {
       fireEvent.mouseEnter(plusButtonContainer);
-      expect(screen.getByText("Value must smaller than 100")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText("Value must smaller than 100")).toBeInTheDocument();
+      });
     }
   });
 });

@@ -90,8 +90,6 @@ const App = () => {
       {
         min: 0,
         max: selectedUnit === "%" ? 100 : undefined,
-        previousValidValue:
-          selectedUnit === "%" ? previousValidValueRef.current : undefined,
       }
     );
 
