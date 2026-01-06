@@ -6,5 +6,5 @@ import svgr from 'vite-plugin-svgr'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss(), svgr()],
-   base: '/gem_react_prj_test/'
+  base: '/',
 })
