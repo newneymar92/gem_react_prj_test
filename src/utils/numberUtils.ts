@@ -16,7 +16,8 @@ export const extractValidNumber = (str: string): number | null => {
 
   const cleaned = str.replace(/,/g, ".");
 
-  if (!/^-?\d/.test(cleaned)) {
+  // Check if input starts with valid character: digit, minus, or dot
+  if (!/^-?\d|^-?\./.test(cleaned)) {
     return null;
   }
 
@@ -25,7 +26,8 @@ export const extractValidNumber = (str: string): number | null => {
     return null;
   }
 
-  const match = cleaned.match(/^-?\d+\.?\d*/);
+  // Match: optional minus, then either digits.digits OR .digits OR digits
+  const match = cleaned.match(/^-?(\d+\.?\d*|\.\d+)/);
   if (!match) {
     return null;
   }
